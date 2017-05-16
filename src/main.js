@@ -1,6 +1,7 @@
 const THREE = require('three'); // older modules are imported like this. You shouldn't have to worry about this much
+const Tone = require('tone');
 import Framework from './framework'
-
+import MusicMaker from './audioProvider'
 // r,g,b to pass to shaders
 var r=0.6;
 var g=0.0;
@@ -13,6 +14,7 @@ var GUIoptions = function()
 	this.Green=0.0;
 	this.Blue=0.0;
 	this.Music=false;
+	this.Audio=false;
 	this.MusicSource=function(){
 		window.location = "http://freemusicarchive.org/music/The_Kyoto_Connection/Wake_Up_1957/09_Hachiko_The_Faithtful_Dog";};
 }
@@ -46,6 +48,8 @@ var material = new THREE.PointCloudMaterial({	size: 0.25, vertexColors: THREE.Ve
 var geometry = new THREE.Geometry();
 var pointCloud = new THREE.PointCloud(geometry, material);
 
+var mmaker = new MusicMaker();
+
 // called after the scene loads
 function onLoad(framework) {
   var scene = framework.scene;
@@ -78,7 +82,32 @@ function onLoad(framework) {
 	}
 
 
-	scene.add(pointCloud);
+  scene.add(pointCloud);
+
+
+
+/*
+var synth = new Tone.Synth({
+			"oscillator" : {
+				"type" : "square"
+			},
+			"envelope" : {
+				"attack" : 0.01,
+				"decay" : 0.2,
+				"sustain" : 0.2,
+				"release" : 0.2,
+			}
+		}).toMaster();
+		// GUI //
+		var keyboard = Interface.Keyboard();
+		keyboard.keyDown = function (note) {
+		    synth.triggerAttack(note);
+		};
+		keyboard.keyUp = function () {
+		    synth.triggerRelease();
+		};
+*/
+
 
   // set camera position
   camera.position.set(0,10,50);
@@ -92,20 +121,27 @@ function onLoad(framework) {
     camera.updateProjectionMatrix();
   });
   var update= new GUIoptions();
-  gui.add(update,'Red', 0.0, 1.0,0.05).onChange(function(newVal) {
-    r=newVal;
-  });
-  gui.add(update,'Green', 0.0, 1.0,0.05).onChange(function(newVal) {
-    g=newVal;
-  });
-  gui.add(update,'Blue', 0.0, 1.0,0.05).onChange(function(newVal) {
-    b=newVal;
-  });
+  // gui.add(update,'Red', 0.0, 1.0,0.05).onChange(function(newVal) {
+  //   r=newVal;
+  // });
+  // gui.add(update,'Green', 0.0, 1.0,0.05).onChange(function(newVal) {
+  //   g=newVal;
+  // });
+  // gui.add(update,'Blue', 0.0, 1.0,0.05).onChange(function(newVal) {
+  //   b=newVal;
+  // });
   gui.add(update,'Music').onChange(function(newVal) {
     if(newVal===false) aud.pause();
 	else aud.play();
   });
-  gui.add(update,'MusicSource').onclick;
+  gui.add(update,'Audio').onChange(function(newVal) {
+    mmaker.on = newVal;
+	if(mmaker.on===true)
+	{
+		mmaker.test();
+	}
+  });
+  //gui.add(update,'MusicSource').onclick;
 }
 
 // called on frame updates
@@ -144,7 +180,7 @@ function onUpdate(framework) {
 
 	//var vert = new THREE.Vector3(dX,dY,dZ);
     geometry.vertices[i] = new THREE.Vector3(dX,dY,dZ);
-   };
+   }
    geometry.verticesNeedUpdate = true;
    geometry.colorsNeedUpdate = true;
 }
