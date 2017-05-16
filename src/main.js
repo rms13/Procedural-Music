@@ -44,9 +44,9 @@ var time=0.0;
 //   });
 
 var vertList = [];
-var material = new THREE.PointCloudMaterial({	size: 0.25, vertexColors: THREE.VertexColors });
+var material = new THREE.PointsMaterial({	size: 0.25, vertexColors: THREE.VertexColors });
 var geometry = new THREE.Geometry();
-var pointCloud = new THREE.PointCloud(geometry, material);
+var pointCloud = new THREE.Points(geometry, material);
 
 var mmaker = new MusicMaker();
 
@@ -80,7 +80,6 @@ function onLoad(framework) {
 	  geometry.vertices.push(vert);
 	  geometry.colors.push(new THREE.Color(0,0,0));//(Math.random(), Math.random(), Math.random()));
 	}
-
 
   scene.add(pointCloud);
 
