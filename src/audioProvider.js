@@ -21,6 +21,8 @@ export default class MusicMaker
     {
         //console.log("hi");
         this.simpleDuoSynth();
+
+        //this.simpleNotes();
     }
 
     convertNote(input)
@@ -42,12 +44,20 @@ export default class MusicMaker
     simpleNotes()
     {
         //create a synth and connect it to the master output (your speakers)
-        var synth = new Tone.Synth().toMaster();
+        //var synth = new Tone.MembraneSynth().toMaster();
+        var synth = new Tone.PluckSynth().toMaster();
         //play a middle 'C' for the duration of an 8th note
-        var notes = ['C4','D4','E4','F4','G4','A4','B4'];
+        var notes = ['C4','D4','E4','F4','G4','A4','B4','C5'];
 
-        for(var i=0;i<7;i++)
-            synth.triggerAttackRelease(notes[i], '8n');
+        for(var i=0;i<8;i++)
+            synth.triggerAttackRelease(notes[i], '8n', '+'+i+'*8n');
+
+        // //a polysynth composed of 6 Voices of Synth
+        // var synth = new Tone.PolySynth(6, Tone.Synth).toMaster();
+        // //set the attributes using the set interface
+        // synth.set("detune", -1200);
+        // //play a chord
+        // synth.triggerAttackRelease(["C4", "E4", "A4"], "4n");
     }
 
     simpleMonoSynth()
@@ -152,7 +162,7 @@ export default class MusicMaker
             }
         }, '128m+16m').start();
 
-        Tone.Transport.bpm.value = 120 * 4;
+        Tone.Transport.bpm.value = 120 * 8;
 
         //Tone.Transport.start();
     }
@@ -235,6 +245,15 @@ export default class MusicMaker
         }
     }
 
+    drums()
+    {
+        var bassline = new Tone.SimpleSynth();
+        var basslineVolume = new Tone.Volume(-10);
+        var basslineDistortion = new Tone.Distortion(50);
+        bassline.chain(basslineDistortion, basslineVolume);
+        bassline.chain(basslineVolume, Tone.Master);
+    }
+
     bhairavCompose2()
     {
         // var aroha = [this.notes[0],     // S
@@ -259,17 +278,17 @@ export default class MusicMaker
         this.startString = 'G4M4d4';
 
         var n1,n2,n3,n;
-        n1 = 'G4'; n2 = 'M4'; n3 = 'd4';
+        n1 = 'G4'; n2 = '__'; n3 = 'M4';
 
         this.composedString.push(n1);
-        this.composedString.push(n2);
+        //this.composedString.push(n2);
         this.composedString.push(n3);
 
-        this.composedStringLength.push(1);
-        this.composedStringLength.push(1);
-        this.composedStringLength.push(1);
+        this.composedStringLength.push(2);
+        //this.composedStringLength.push(2);
+        this.composedStringLength.push(2);
 
-        for(var j=0; j<this.totalMatra-3;j++)
+        for(var j=0; j<this.totalMatra;j++)
         {
             //console.log(j);
             var index = (this.noteList.indexOf(n1))*22*22
@@ -378,20 +397,46 @@ export default class MusicMaker
         /// MATRIX COMPUTING
         // var trainString = 'S4r4G4M4P4__d4N4';
 
+        // // SHORT PHRASES FROM "VISTAAR"
+        // var trainString = 'S4 __ d3 N3 S4 S4 __ __ r4 S4 S4 r4 G4 __ r4 G4 M4 G4 __ r4 __ S4 r4 N3 d3 N3 r4 __ S4'
+        //                 + 'S4 r4 G4 M4 G4 M4 G4 r4 G4 r4 G4 M4 P4 M4 P4 d4 P4 M4 G4 r4 G4 M4 d4 __ P4 M4 G4 M4 r4 __ S4'
+        //                 + 'G4 M4 d4 __ P4 d4 M4 P4 G4 M4 r4 __ S4 r4 G4 M4 d4 P4 d4 N4 d4 S5 N4 d4 P4 d4 M4 N4 d4 P4 M4 P4 G4 M4 r4 S4'
+        //                 + 'S4 r4 G4 M4 P4 d4 __ N4 d4 P4 d4 N4 S5 __ __ N4 S5 r5 S5 N4 d4 P4 P4 d4 N4 S5 r5 G5 r5 S5 N4 d4 P4 __ M4 P4 G4 r4 M4 G4 r4 S4';
+        //
+        // // SARGAM - EKTAAL
+        // trainString +=  'S4 r4 G4 M4 d4 __ P4 __ G4 M4 r4 S4'
+        //                +'r4 __ S4 __ d3 S4 r4 S4 G4 M4 d4 __'
+        //                +'M4 P4 G4 M4 d4 N4 S5 __ S5 S5 r5 S5'
+        //                +'S5 N4 d4 P4 G4 M5 d4 N4 S5 __ r5 S5'
+        //                +'S5 r5 __ N4 S5 __ d4 N4 __ G4 M4 d4';
+
         // SHORT PHRASES FROM "VISTAAR"
-        var trainString = 'S4 __ d3 N3 S4 S4 __ __ r4 S4 S4 r4 G4 __ r4 G4 M4 G4 __ r4 __ S4 r4 N3 d3 N3 r4 __ S4'
-                        + 'S4 r4 G4 M4 G4 M4 G4 r4 G4 r4 G4 M4 P4 M4 P4 d4 P4 M4 G4 r4 G4 M4 d4 __ P4 M4 G4 M4 r4 __ S4'
-                        + 'G4 M4 d4 __ P4 d4 M4 P4 G4 M4 r4 __ S4 r4 G4 M4 d4 P4 d4 N4 d4 S5 N4 d4 P4 d4 M4 N4 d4 P4 M4 P4 G4 M4 r4 S4'
-                        + 'S4 r4 G4 M4 P4 d4 __ N4 d4 P4 d4 N4 S5 __ __ N4 S5 r5 S5 N4 d4 P4 P4 d4 N4 S5 r5 G5 r5 S5 N4 d4 P4 __ M4 P4 G4 r4 M4 G4 r4 S4';
+        var trainString = 'S4 __ __ __ d3 __ N3 __ S4 __ S4 __ __ __ __ __ r4 __ S4 __ S4 __ r4 __ G4 __ __ __ r4 __ G4 __ M4 __ G4 __ __ __ r4 __ __ __ S4 __ r4 __ N3 __ d3 __ N3 __ r4 __ __ __ S4 __'
+
++ 'S4 __ r4 __ G4 __ M4 __ G4 __ M4 __ G4 __ r4 __ G4 __ r4 __ G4 __ M4 __ P4 __ M4 __ P4 __ d4 __ P4 __ M4 __ G4 __ r4 __ G4 __ M4 __ d4 __ __ __ P4 __ M4 __ G4 __ M4 __ r4 __ __ __ S4 __'
+
++'G4 __ M4 __ d4 __ __ __ P4 __ d4 __ M4 __ P4 __ G4 __ M4 __ r4 __ __ __ S4 __ r4 __ G4 __ M4 __ d4 __ P4 __ d4 __ N4 __ d4 __ S5 __ N4 __ d4 __ P4 __ d4 __ M4 __ N4 __ d4 __ P4 __ M4 __ P4 __ G4 __ M4 __ r4 __ S4 __'
+
++'S4 r4 G4 M4 P4 d4 __ __ __ N4 __ d4 __ P4 __ d4 __ N4 __ S5 __ __ __ __ __ N4 __ S5 __ r5 __ S5 __ N4 __ d4 __ P4 __ P4 __ d4 __ N4 __ S5 __ r5 __ G5 __ r5 __ S5 __ N4 __ d4 __ P4 __ __ __ M4 __ P4 __ G4 __ r4 __ M4 __ G4 __ r4 __ S4 __';
 
         // SARGAM - EKTAAL
-        trainString +=  'S4 r4 G4 M4 d4 __ P4 __ G4 M4 r4 S4'
-                       +'r4 __ S4 __ d3 S4 r4 S4 G4 M4 d4 __'
-                       +'M4 P4 G4 M4 d4 N4 S5 __ S5 S5 r5 S5'
-                       +'S5 N4 d4 P4 G4 M5 d4 N4 S5 __ r5 S5'
-                       +'S5 r5 __ N4 S5 __ d4 N4 __ G4 M4 d4';
+        trainString +=  'S4 __ r4 __ G4 __ M4 __ d4 __ __ __ P4 __ __ __ G4 __ M4 __ r4 __ S4 __'
++'r4 __ __ __ S4 __ __ __ d3 __ S4 __ r4 __ S4 __ G4 __ M4 __ d4 __ __ __'
++'M4 __ P4 __ G4 __ M4 __ d4 __ N4 __ S5 __ __ __ S5 __ S5 __ r5 __ S5 __'
++'S5 __ N4 __ d4 __ P4 __ G4 __ M5 __ d4 __ N4 __ S5 __ __ __ r5 __ S5 __'
++'S5 __ r5 __ __ __ N4 __ S5 __ __ __ d4 __ N4 __ __ __ G4 M4 __ d4 __ __ __';
+
+        // TAAN [STHAYI]
+        trainString += 'S4 r4 G4 M4 P4 M4 G4 M4 P4 d4 M4 P4 G4 M4 r4 S4'
+        + 'd4 P4 M4 P4 G4 M4 G4 r4 G4 M4 P4 M4 G4 r4 S4 __';
+        + 'S4 r4 G4 M4 P4 M4 G4 M4 P4 d4 N4 d4 P4 d4 N4 S5 r5 S5 __ r5 N4 S5 N4 d4'
+        + 'S4 r4 S4 r4 r4 G4 r4 G4 G4 M4 G4 M4 M4 P4 M4 P4 P4 d4 P4 d4 d4 N4 d4 N4 N4 S5 N4 S5 r5 __ S5 __'
+        + 'S4 r4 G4 r4 r4 G4 M4 G4 G4 M4 P4 M4 M4 P4 d4 P4 P4 d4 N4 d4 d4 N4 S5 __ S5 N4 d4 P4 M4 G4 r4 S4';
 
         trainString = trainString.replace(/ /g,''); // remove white spaces
+
+        //USE THIS TO FORMAT THE STRING AND EDIT THE OUTPUT FOR FAST INTERMEDIATE NOTES..
+        //trainString = trainString.replace(/ /g,' __ '); // replace white spaces with __ and play at double speed..
 
         console.log(trainString);
 
@@ -426,4 +471,5 @@ export default class MusicMaker
         }
 
     }
+
 }
