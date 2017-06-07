@@ -6,6 +6,8 @@ export default class MusicMaker
 {
     constructor() {
         this.on = false;
+        this.compositionLength = 16;
+        this.compositionLength *= 16;
         this.notes = ['C',          // SA
                     'Db','D',     // RE
                     'Eb','E',     // GA
@@ -13,16 +15,36 @@ export default class MusicMaker
                     'G',           // PA
                     'Ab','A',     // DHA
                     'Bb','B'];    // NI
+        this.createPiano();
         this.bhairavMarkov();
         this.bhairavCompose2();
     }
 
+    createPiano()
+    {
+        this.multiPlayer = new Tone.MultiPlayer().toMaster();
+        var list = ["C","D","E","F","G","A","B","Db","Eb","Gb","Ab","Bb"];
+        for(var i=0; i<12; i++)
+        {
+            this.multiPlayer.add(list[i]+"3","./instruments/piano/Piano.mf."+list[i]+"3.wav");
+            this.multiPlayer.add(list[i]+"4","./instruments/piano/Piano.mf."+list[i]+"4.wav");
+            this.multiPlayer.add(list[i]+"5","./instruments/piano/Piano.mf."+list[i]+"5.wav");
+        }
+        //console.log(this.multiPlayer);
+
+        // new Tone.Loop(time => {
+        //     //this.multiPlayer.start("C3","1m",0,'+4n'); //.start (bufferName, time[, offset][, duration][, pitch][, gain])
+        //     for(var i=0; i<7; i++)
+        //     {
+        //         this.multiPlayer.start(list[i]+"3",'+'+i+'m/4',0,'1m');
+        //     }
+        // }, 6+'m').start();
+        // Tone.Transport.bpm.value = 120;
+    }
+
     test()
     {
-        //console.log("hi");
-        this.simpleDuoSynth();
-
-        //this.simpleNotes();
+        this.simplePolySynth();
     }
 
     convertNote(input)
@@ -33,52 +55,33 @@ export default class MusicMaker
         else if(input == 'g') return 'Eb';
         else if(input == 'G') return 'E';
         else if(input == 'M') return 'F';
-        else if(input == 'm') return 'F#';
+        else if(input == 'm') return 'Gb';
         else if(input == 'P') return 'G';
         else if(input == 'd') return 'Ab';
         else if(input == 'D') return 'A';
         else if(input == 'n') return 'Bb';
-        else return 'B';
+        else return 'B'; // N
     }
 
-    simpleNotes()
+    simplePolySynth()
     {
-        //create a synth and connect it to the master output (your speakers)
-        //var synth = new Tone.MembraneSynth().toMaster();
-        var synth = new Tone.PluckSynth().toMaster();
-        //play a middle 'C' for the duration of an 8th note
-        var notes = ['C4','D4','E4','F4','G4','A4','B4','C5'];
+        new Tone.Loop(time => {
+            // COMPOSITION:
+            //      DECIDE NEXT NOTE HERE
 
-        for(var i=0;i<8;i++)
-            synth.triggerAttackRelease(notes[i], '8n', '+'+i+'*8n');
+            var matraOffset = 0;
+            this.currentNote = 0;
+            //this.currentOctave = 4;
 
-        // //a polysynth composed of 6 Voices of Synth
-        // var synth = new Tone.PolySynth(6, Tone.Synth).toMaster();
-        // //set the attributes using the set interface
-        // synth.set("detune", -1200);
-        // //play a chord
-        // synth.triggerAttackRelease(["C4", "E4", "A4"], "4n");
-    }
-
-    simpleMonoSynth()
-    {
-        var synth = new Tone.MonoSynth({
-          oscillator: {type: 'sawtooth'},
-          envelope: {
-            attack: 0.1,
-            release: 4,
-            releaseCurve: 'linear'
-          },
-          filterEnvelope: {
-            baseFrequency: 200,
-            octaves: 2,
-            attack: 0,
-            decay: 0,
-            release: 1000
-          }
-        });
-        synth.toMaster();
-        synth.triggerAttackRelease('C4', 1);
+            for(var i=0; i<this.composedString.length; i++)
+            {
+                var nextnote = this.convertNote(this.composedString[this.currentNote][0]);
+                this.multiPlayer.start(nextnote+this.composedString[this.currentNote][1], '+1m*'+matraOffset/8,0,'1m');
+                matraOffset+=this.composedStringLength[this.currentNote];
+                this.currentNote++;
+            }
+        }, this.compositionLength+'m/8+16m/8').start();
+        //Tone.Transport.bpm.value = 120 * 8;
     }
 
     simpleDuoSynth()
@@ -122,28 +125,6 @@ export default class MusicMaker
         //             'G',           // PA
         //             'Ab','A',     // DHA
         //             'Bb','B'];    // NI
-        //var notes = this.notes;
-
-        // var matraOffset = 0;
-
-        // this.currentNote = 0;
-        // new Tone.Loop(time => {
-        //     // COMPOSITION:
-        //     //      DECIDE NEXT NOTE HERE
-        //
-        //     //this.simpleCompose();
-        //
-        //     this.bhairavFSATraverse(matraOffset);
-        //     matraOffset++;
-        //     if(matraOffset===this.totalMatra)
-        //         matraOffset=0;
-        //
-        //     // PLAY
-        //     //synth.triggerAttackRelease(this.notes[this.currentNote]+this.currentOctave, '8n', '+4n');//1, time);
-        //     synth.triggerAttackRelease(this.composedString[this.currentNote]+this.currentOctave, '8n');//1, time);
-        //     //synth.triggerAttackRelease(this.composedString[this.currentNote]+this.currentOctave, '8n', '+'+4*this.composedStringLength[this.currentNote]+'n');//1, time);
-        //     //synth.triggerAttackRelease(this.composedString[this.currentNote]+this.currentOctave, 8*this.composedStringLength[this.currentNote]+'n', '+4n');
-        // }, '1m').start();
 
         new Tone.Loop(time => {
             // COMPOSITION:
@@ -156,39 +137,14 @@ export default class MusicMaker
             for(var i=0; i<this.composedString.length; i++)
             {
                 var nextnote = this.convertNote(this.composedString[this.currentNote][0]);
-                synth.triggerAttackRelease(nextnote+this.composedString[this.currentNote][1], '1m', '+'+matraOffset+'m');
+                synth.triggerAttackRelease(nextnote+this.composedString[this.currentNote][1], '+'+matraOffset+'m');
                 matraOffset+=this.composedStringLength[this.currentNote];
                 this.currentNote++;
             }
-        }, '128m+16m').start();
+        }, this.compositionLength+'m+16m').start();
 
         Tone.Transport.bpm.value = 120 * 8;
-
-        //Tone.Transport.start();
     }
-
-    simpleCompose()
-    {
-        //12 NOTES IN SEQUENCE
-        //   if(this.currentNote<11)
-        //     this.currentNote++;
-        //   else
-        //     this.currentNote=0;
-
-        //RANDOM OCTAVE (3,4,5)
-        this.currentOctave = 4 + Math.floor(Math.random()*3);
-
-        //RANDOM NOTES
-        this.currentNote = Math.floor(Math.random()*12);
-        //
-    }
-
-    // bhairavFSATraverse(matraOffset)
-    // {
-    //     this.currentOctave = 4;
-    //     this.currentNote++;// = matraOffset;
-    //     //console.log(matraOffset);
-    // }
 
     bhairavCompose()
     {
@@ -231,27 +187,11 @@ export default class MusicMaker
         this.composedStringLength = [];
         this.totalMatra = 10;//7+7+6;
 
-        // for(var i=0; i<7; i++)
-        // {
-        //     this.composedString[i]=aroha[i];
-        //     this.composedString[7+i]=avaroha[i];
-        //     this.composedString[14+i]=pakad[i];
-        // }
-
         for(var i=0; i<6; i++)
         {
             this.composedString[i]=pakad[i*2];
             this.composedStringLength[i]=pakad[i*2+1];
         }
-    }
-
-    drums()
-    {
-        var bassline = new Tone.SimpleSynth();
-        var basslineVolume = new Tone.Volume(-10);
-        var basslineDistortion = new Tone.Distortion(50);
-        bassline.chain(basslineDistortion, basslineVolume);
-        bassline.chain(basslineVolume, Tone.Master);
     }
 
     bhairavCompose2()
@@ -274,7 +214,7 @@ export default class MusicMaker
 
         this.composedString = [];
         this.composedStringLength = [];
-        this.totalMatra = 128;//7+7+6;
+        this.totalMatra = this.compositionLength;//128*2;
         this.startString = 'G4M4d4';
 
         var n1,n2,n3,n;
@@ -412,33 +352,37 @@ export default class MusicMaker
 
         // SHORT PHRASES FROM "VISTAAR"
         var trainString = 'S4 __ __ __ d3 __ N3 __ S4 __ S4 __ __ __ __ __ r4 __ S4 __ S4 __ r4 __ G4 __ __ __ r4 __ G4 __ M4 __ G4 __ __ __ r4 __ __ __ S4 __ r4 __ N3 __ d3 __ N3 __ r4 __ __ __ S4 __'
-
-+ 'S4 __ r4 __ G4 __ M4 __ G4 __ M4 __ G4 __ r4 __ G4 __ r4 __ G4 __ M4 __ P4 __ M4 __ P4 __ d4 __ P4 __ M4 __ G4 __ r4 __ G4 __ M4 __ d4 __ __ __ P4 __ M4 __ G4 __ M4 __ r4 __ __ __ S4 __'
-
-+'G4 __ M4 __ d4 __ __ __ P4 __ d4 __ M4 __ P4 __ G4 __ M4 __ r4 __ __ __ S4 __ r4 __ G4 __ M4 __ d4 __ P4 __ d4 __ N4 __ d4 __ S5 __ N4 __ d4 __ P4 __ d4 __ M4 __ N4 __ d4 __ P4 __ M4 __ P4 __ G4 __ M4 __ r4 __ S4 __'
-
-+'S4 r4 G4 M4 P4 d4 __ __ __ N4 __ d4 __ P4 __ d4 __ N4 __ S5 __ __ __ __ __ N4 __ S5 __ r5 __ S5 __ N4 __ d4 __ P4 __ P4 __ d4 __ N4 __ S5 __ r5 __ G5 __ r5 __ S5 __ N4 __ d4 __ P4 __ __ __ M4 __ P4 __ G4 __ r4 __ M4 __ G4 __ r4 __ S4 __';
+        + 'S4 __ r4 __ G4 __ M4 __ G4 __ M4 __ G4 __ r4 __ G4 __ r4 __ G4 __ M4 __ P4 __ M4 __ P4 __ d4 __ P4 __ M4 __ G4 __ r4 __ G4 __ M4 __ d4 __ __ __ P4 __ M4 __ G4 __ M4 __ r4 __ __ __ S4 __'
+        +'G4 __ M4 __ d4 __ __ __ P4 __ d4 __ M4 __ P4 __ G4 __ M4 __ r4 __ __ __ S4 __ r4 __ G4 __ M4 __ d4 __ P4 __ d4 __ N4 __ d4 __ S5 __ N4 __ d4 __ P4 __ d4 __ M4 __ N4 __ d4 __ P4 __ M4 __ P4 __ G4 __ M4 __ r4 __ S4 __'
+        +'S4 r4 G4 M4 P4 d4 __ __ __ N4 __ d4 __ P4 __ d4 __ N4 __ S5 __ __ __ __ __ N4 __ S5 __ r5 __ S5 __ N4 __ d4 __ P4 __ P4 __ d4 __ N4 __ S5 __ r5 __ G5 __ r5 __ S5 __ N4 __ d4 __ P4 __ __ __ M4 __ P4 __ G4 __ r4 __ M4 __ G4 __ r4 __ S4 __';
 
         // SARGAM - EKTAAL
         trainString +=  'S4 __ r4 __ G4 __ M4 __ d4 __ __ __ P4 __ __ __ G4 __ M4 __ r4 __ S4 __'
-+'r4 __ __ __ S4 __ __ __ d3 __ S4 __ r4 __ S4 __ G4 __ M4 __ d4 __ __ __'
-+'M4 __ P4 __ G4 __ M4 __ d4 __ N4 __ S5 __ __ __ S5 __ S5 __ r5 __ S5 __'
-+'S5 __ N4 __ d4 __ P4 __ G4 __ M5 __ d4 __ N4 __ S5 __ __ __ r5 __ S5 __'
-+'S5 __ r5 __ __ __ N4 __ S5 __ __ __ d4 __ N4 __ __ __ G4 M4 __ d4 __ __ __';
+        +'r4 __ __ __ S4 __ __ __ d3 __ S4 __ r4 __ S4 __ G4 __ M4 __ d4 __ __ __'
+        +'M4 __ P4 __ G4 __ M4 __ d4 __ N4 __ S5 __ __ __ S5 __ S5 __ r5 __ S5 __'
+        +'S5 __ N4 __ d4 __ P4 __ G4 __ M5 __ d4 __ N4 __ S5 __ __ __ r5 __ S5 __'
+        +'S5 __ r5 __ __ __ N4 __ S5 __ __ __ d4 __ N4 __ __ __ G4 M4 __ d4 __ __ __';
 
         // TAAN [STHAYI]
         trainString += 'S4 r4 G4 M4 P4 M4 G4 M4 P4 d4 M4 P4 G4 M4 r4 S4'
-        + 'd4 P4 M4 P4 G4 M4 G4 r4 G4 M4 P4 M4 G4 r4 S4 __';
+        + 'd4 P4 M4 P4 G4 M4 G4 r4 G4 M4 P4 M4 G4 r4 S4 __'
         + 'S4 r4 G4 M4 P4 M4 G4 M4 P4 d4 N4 d4 P4 d4 N4 S5 r5 S5 __ r5 N4 S5 N4 d4'
         + 'S4 r4 S4 r4 r4 G4 r4 G4 G4 M4 G4 M4 M4 P4 M4 P4 P4 d4 P4 d4 d4 N4 d4 N4 N4 S5 N4 S5 r5 __ S5 __'
         + 'S4 r4 G4 r4 r4 G4 M4 G4 G4 M4 P4 M4 M4 P4 d4 P4 P4 d4 N4 d4 d4 N4 S5 __ S5 N4 d4 P4 M4 G4 r4 S4';
+
+        // TAAN [ANTRA]
+        trainString += 'd4 N4 S5 r5 S5 N4 d4 P4 M4 P4 G4 M4 P4 d4 N4 S5'
+        + 'S4 r4 G4 M4 P4 __ G4 M4 P4 d4 N4 S4 r4 __ S4 __'
+        + 'S5 N4 d4 P4 M4 G4 r4 S4 S4 r4 G4 M4 P4 d4 N4 S5'
+        + 'N4 S5 N4 d4 N4 d4 P4 d4 P4 M4 P4 M4 G4 M4 G4 M4 P4 M4 P4 d4 P4 d4 N4 d4 N4 S5 N4 S5 r5 __ S5 __'
+        + 'S5 r5 r5 N4 S5 S5 d4 N4 N4 P4 d4 d4 M4 P4 P4 G4 M4 M4 r4 G4 G4 S4 r4 r4 N4 S4 S4 r4 G4 M4 P4 __';
 
         trainString = trainString.replace(/ /g,''); // remove white spaces
 
         //USE THIS TO FORMAT THE STRING AND EDIT THE OUTPUT FOR FAST INTERMEDIATE NOTES..
         //trainString = trainString.replace(/ /g,' __ '); // replace white spaces with __ and play at double speed..
 
-        console.log(trainString);
+        //console.log(trainString);
 
         var trainStringLength = trainString.length/2;
         for(var i=0; i<trainStringLength-3; i++)
